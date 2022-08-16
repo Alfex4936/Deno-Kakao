@@ -1,0 +1,103 @@
+{
+  "template": {
+    "outputs": [
+      {
+        "carousel": {
+          "type": "basicCard",
+          "items": [
+            {
+              "title": "이석원(교원) (leesw@ajou.ac.kr)",
+              "description": "전화번호: 031-219-3548\n부서명: 소프트웨어학과(팔달관 603)",
+              "thumbnail": {
+                "imageUrl": ""
+              },
+              "buttons": [
+                {
+                  "label": "전화",
+                  "action": "phone",
+                  "phoneNumber": "031-219-3548"
+                },
+                {
+                  "label": "이메일",
+                  "action": "webLink",
+                  "webLinkUrl": "mailto:leesw@ajou.ac.kr?subject=안녕하세요"
+                }
+              ]
+            },
+            {
+              "title": "이석원(직원) (ajoutop@ajou.ac.kr)",
+              "description": "전화번호: 031-219-1648\n부서명: 대학발전팀(율곡관 203)",
+              "thumbnail": {
+                "imageUrl": ""
+              },
+              "buttons": [
+                {
+                  "label": "전화",
+                  "action": "phone",
+                  "phoneNumber": "031-219-1648"
+                },
+                {
+                  "label": "이메일",
+                  "action": "webLink",
+                  "webLinkUrl": "mailto:ajoutop@ajou.ac.kr?subject=안녕하세요"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "listCard": {
+          "buttons": [
+            {
+              "label": "그냥 텍스트 버튼",
+              "action": "message"
+            },
+            {
+              "label": "link label",
+              "action": "webLink",
+              "webLinkUrl": "https://google.com"
+            },
+            {
+              "label": "share label",
+              "action": "share",
+              "messageText": "카톡에 보이는 메시지"
+            },
+            {
+              "label": "call label",
+              "action": "phone",
+              "phoneNumber": "010-1234-5678"
+            }
+          ],
+          "header": {
+            "title": "리스트 카드 제목!"
+          },
+          "items": [
+            {
+              "title": "title",
+              "description": "description",
+              "imageUrl": null,
+              "link": {
+                "web": "https://naver.com"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "quickReplies": [
+      {
+        "action": "message",
+        "label": "오늘",
+        "messageText": "오늘 공지 보여줘"
+      },
+      {
+        "action": "message",
+        "label": "어제",
+        "messageText": "어제 공지 보여줘",
+        "blockId": null
+      }
+    ]
+  },
+  "version": "2.0"
+}
