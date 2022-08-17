@@ -36,21 +36,21 @@ export interface CarouselHeader {
   thumbnail: Thumbnail;
 }
 
-export interface BasicCard {
+export interface BasicCardContent {
   thumbnail?: Thumbnail;
   buttons?: Button[];
   title?: string;
   description?: string;
 }
 
-export interface CommerceCard extends BasicCard {
+export interface CommerceCard extends BasicCardContent {
   price: number;
   currency: string;
 }
 
-export interface Carousel {
-  type: string;
-  items?: BasicCard[];
+export interface CarouselContent {
+  type?: string;
+  items?: BasicCardContent[];
   header?: CarouselHeader;
 }
 
@@ -70,8 +70,9 @@ export interface ListCard {
 
 export interface Output {
   simpleText?: SimpleText;
-  carousel?: Carousel;
+  carousel?: CarouselContent;
   listCard?: ListCard;
+  basicCard?: BasicCardContent;
 }
 
 export interface QuickReply {
@@ -91,94 +92,126 @@ export interface Root {
   version: string;
 }
 
-const j = `
-{
-    "template": {
-        "outputs": [
-            {
-                "simpleText": {
-                    "text": "심플 텍스트 테스트"
-                }
-            },
-            {
-                "listCard": {
-                    "buttons": [
-                        {
-                            "action": "share",
-                            "label": "공유하기"
-                        },
-                        {
-                            "action": "webLink",
-                            "label": "ajouLink",
-                            "webLinkUrl": "https://"
-                        }
-                    ],
-                    "header": {
-                        "title": "21.07.20) 오늘 공지"
-                    },
-                    "items": [
-                        {
-                            "description": "교무팀 07.20",
-                            "link": {
-                                "web": "?mode=view&articleNo=111791&article.offset=0&articleLimit=30"
-                            },
-                            "title": "(학사과정)2021-2학기 국내대학 학점교류 신청 안내(2..."
-                        },
-                        {
-                            "description": "대학일자리플러스센터 07.20",
-                            "link": {
-                                "web": "?mode=view&articleNo=111782&article.offset=0&articleLimit=30"
-                            },
-                            "title": "7월 3주차 이공계인력중개센터 채용 정보"
-                        },
-                        {
-                            "description": "입학사정센터 07.20",
-                            "link": {
-                                "web": "?mode=view&articleNo=111780&article.offset=0&articleLimit=30"
-                            },
-                            "title": "2021년 아주 희망 기숙사비 지원 장학생 모집 ~7/23까지"
-                        },
-                        {
-                            "description": "학생지원팀 07.20",
-                            "link": {
-                                "web": "?mode=view&articleNo=111779&article.offset=0&articleLimit=30"
-                            },
-                            "title": "[교외장학] 2021학년도 2학기 김수정장학 장학생 선발 공고"
-                        }
-                    ]
-                }
-            }
-        ],
-        "quickReplies": [
-            {
-                "action": "message",
-                "label": "빠른 응답 1",
-                "messageText": "빠른 응답 1"
-            },
-            {
-                "action": "message",
-                "label": "빠른 응답 1",
-                "messageText": "빠른 응답 1"
-            }
-        ]
-    },
-    "version": "2.0"
+export enum ButtonType {
+  CALL,
+  LINK,
+  SHARE,
+  TEXT,
 }
-`;
 
-class Kakao {
+export class BasicCard {
+  private card: BasicCardContent;
+
+  constructor() {
+    this.card = { buttons: [] }; //TODO thumbnail: ThumbNail::new("".to_string()),
+  }
+
+  set_title(title: string) {
+    this.card.title = title;
+  }
+
+  set_desc(desc: string) {
+    this.card.description = desc;
+  }
+
+  new_button(btn_type: ButtonType, ...args: string[]) {
+    let action = "message";
+    const b: Button = { label: args[0], action: action };
+
+    switch (btn_type) {
+      case ButtonType.CALL:
+        action = "phone";
+        b.phoneNumber = args[1];
+        break;
+      case ButtonType.LINK:
+        action = "webLink";
+        b.webLinkUrl = args[1];
+        break;
+      case ButtonType.SHARE:
+        action = "share";
+        b.messageText = args[1];
+        break;
+      default: // TEXT
+        // never approach
+        break;
+    }
+
+    b.action = action;
+
+    this.card.buttons?.push(b);
+  }
+
+  add_button(btn: Button): BasicCard {
+    this.card.buttons?.push(btn);
+    return this;
+  }
+
+  build(): Output {
+    if (this.card.buttons?.length == 0) {
+      this.card.buttons = undefined;
+    }
+    return { basicCard: this.card };
+  }
+
+  build_card(): BasicCardContent {
+    if (this.card.buttons?.length == 0) {
+      this.card.buttons = undefined;
+    }
+    return this.card;
+  }
+}
+
+export class Carousel {
+  private carousel: CarouselContent;
+
+  constructor(type?: string) {
+    this.carousel = {
+      type: type === undefined ? "basicCard" : type,
+      items: [],
+    };
+  }
+
+  add_card(card: BasicCardContent) {
+    this.carousel.items?.push(card);
+  }
+
+  build(): Output {
+    if (this.carousel.items?.length == 0) {
+      this.carousel.items = undefined;
+    }
+    return { carousel: this.carousel };
+  }
+}
+
+export class Kakao {
   private kakao: Root;
-  private temp: any;
+  private temp: BasicCardContent; // BasicCard
 
   constructor() {
     this.kakao = {
       version: "2.0",
       template: { outputs: [], quickReplies: [] },
     };
+
+    this.temp = {};
+  }
+
+  // Add temp to output
+  finalize() {
+    this.kakao.template.outputs.push({ basicCard: this.temp });
+  }
+
+  get_last_card(): BasicCardContent {
+    return this.temp;
   }
 
   add_output(some_output: any) {
     this.kakao.template.outputs.push(some_output);
+  }
+
+  // SimpleText
+  add_simple_text(text: string) {
+    this.kakao.template.outputs.push({ simpleText: { text: text } });
   }
 
   // QuickReply
@@ -190,12 +223,66 @@ class Kakao {
     });
   }
 
-  add_button() {
+  // add_basic_card -> args: label and option
+  add_button2(btn_type: ButtonType, ...args: string[]): Kakao {
+    let action = "message";
+    const b: Button = { label: args[0], action: action };
+
+    switch (btn_type) {
+      case ButtonType.CALL:
+        action = "phone";
+        b.phoneNumber = args[1];
+        break;
+      case ButtonType.LINK:
+        action = "webLink";
+        b.webLinkUrl = args[1];
+        break;
+      case ButtonType.SHARE:
+        action = "share";
+        b.messageText = args[1];
+        break;
+      default: // TEXT
+        // never approach
+        break;
+    }
+
+    b.action = action;
+
+    this.temp.buttons?.push(b);
+
+    return this;
+  }
+
+  add_button(c: BasicCardContent, btn_type: ButtonType, ...args: string[]) {
+    let action = "message";
+    const b: Button = { label: args[0], action: action };
+
+    switch (btn_type) {
+      case ButtonType.CALL:
+        action = "phone";
+        b.phoneNumber = args[1];
+        break;
+      case ButtonType.LINK:
+        action = "webLink";
+        b.webLinkUrl = args[1];
+        break;
+      case ButtonType.SHARE:
+        action = "share";
+        b.messageText = args[1];
+        break;
+      default: // TEXT
+        // never approach
+        break;
+    }
+
+    b.action = action;
+
+    c.buttons?.push(b);
   }
 
   //
-  build_basic_card(title?: string, description?: string) {
-    const b: BasicCard = {};
+  new_basic_card(title?: string, description?: string): BasicCardContent {
+    const b: BasicCardContent = {};
     if (title !== null) {
       b.title = title;
     }
@@ -204,43 +291,10 @@ class Kakao {
     }
 
     this.temp = b;
+    return b;
   }
 
   json(): string {
     return JSON.stringify(this.kakao);
   }
 }
-
-function build_qr(label: string, msg?: string): QuickReply {
-  return { action: "message", label: label, messageText: msg };
-}
-
-function build_simple_text(text: string): SimpleText {
-  return {
-    text: text,
-  };
-}
-
-function build_carousel(type?: string) {
-  //   let c: Carousel = { type: type === null ? "basicCard" : type };
-  console.log(1);
-}
-
-function make() {
-  //   const kakao: Kakao = {
-  //     version: "2.0",
-  //     template: { outputs: [], quickReplies: [] },
-  //   };
-
-  //   kakao.template.outputs.push({ simpleText: { text: "" } });
-  //   kakao.template.quickReplies.push({ action: "message", label: "labell" });
-
-  const kakao = new Kakao();
-
-  kakao.add_qr("hello");
-  kakao.add_output(build_simple_text("randomize"));
-
-  console.log(kakao.json());
-}
-
-make();
