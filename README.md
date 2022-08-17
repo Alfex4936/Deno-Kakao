@@ -5,9 +5,10 @@
 
 # 카카오톡 챗봇 with deno
 
-deno (oak webframework) + Typescript
+`deno` (oak webframework) + Typescript
 
 # JSON 결과
+</div>
 
 ```ts
 router.post("/info/prof", async (ctx) => {
@@ -49,7 +50,7 @@ router.post("/info/prof", async (ctx) => {
 });
 ```
 
--> Result
+## Result
 
 ```json
 {
