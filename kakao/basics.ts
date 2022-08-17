@@ -84,7 +84,7 @@ export interface QuickReply {
 
 export interface Template {
   outputs: Output[];
-  quickReplies: QuickReply[];
+  quickReplies?: QuickReply[];
 }
 
 export interface Root {
@@ -196,15 +196,6 @@ export class Kakao {
     this.temp = {};
   }
 
-  // Add temp to output
-  finalize() {
-    this.kakao.template.outputs.push({ basicCard: this.temp });
-  }
-
-  get_last_card(): BasicCardContent {
-    return this.temp;
-  }
-
   add_output(some_output: any) {
     this.kakao.template.outputs.push(some_output);
   }
@@ -216,85 +207,17 @@ export class Kakao {
 
   // QuickReply
   add_qr(label: string, msg?: string) {
-    this.kakao.template.quickReplies.push({
+    this.kakao.template.quickReplies?.push({
       action: "message",
       label: label,
       messageText: msg,
     });
   }
 
-  // add_basic_card -> args: label and option
-  add_button2(btn_type: ButtonType, ...args: string[]): Kakao {
-    let action = "message";
-    const b: Button = { label: args[0], action: action };
-
-    switch (btn_type) {
-      case ButtonType.CALL:
-        action = "phone";
-        b.phoneNumber = args[1];
-        break;
-      case ButtonType.LINK:
-        action = "webLink";
-        b.webLinkUrl = args[1];
-        break;
-      case ButtonType.SHARE:
-        action = "share";
-        b.messageText = args[1];
-        break;
-      default: // TEXT
-        // never approach
-        break;
-    }
-
-    b.action = action;
-
-    this.temp.buttons?.push(b);
-
-    return this;
-  }
-
-  add_button(c: BasicCardContent, btn_type: ButtonType, ...args: string[]) {
-    let action = "message";
-    const b: Button = { label: args[0], action: action };
-
-    switch (btn_type) {
-      case ButtonType.CALL:
-        action = "phone";
-        b.phoneNumber = args[1];
-        break;
-      case ButtonType.LINK:
-        action = "webLink";
-        b.webLinkUrl = args[1];
-        break;
-      case ButtonType.SHARE:
-        action = "share";
-        b.messageText = args[1];
-        break;
-      default: // TEXT
-        // never approach
-        break;
-    }
-
-    b.action = action;
-
-    c.buttons?.push(b);
-  }
-
-  //
-  new_basic_card(title?: string, description?: string): BasicCardContent {
-    const b: BasicCardContent = {};
-    if (title !== null) {
-      b.title = title;
-    }
-    if (description !== null) {
-      b.description = description;
-    }
-
-    this.temp = b;
-    return b;
-  }
-
   json(): string {
+    if (this.kakao.template.quickReplies?.length == 0) {
+      this.kakao.template.quickReplies = undefined;
+    }
     return JSON.stringify(this.kakao);
   }
 }
